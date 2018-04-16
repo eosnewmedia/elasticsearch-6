@@ -21,7 +21,7 @@ trait ObjectAsKeywordTrait
      * @param string $serializedObject
      * @return object
      */
-    protected function unserializeTypedValue(string $serializedObject): object
+    protected function unserializeObject(string $serializedObject): object
     {
         return unserialize($serializedObject, ['allowed_classes' => true]);
     }
