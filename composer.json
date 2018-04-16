@@ -1,0 +1,26 @@
+{
+  "name": "enm/elasticsearch-6",
+  "description": "Elasticsearch 6.x Client (low-level)",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Philipp Marien",
+      "email": "marien@eosnewmedia.de"
+    }
+  ],
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "Enm\\Elasticsearch\\": "src"
+    }
+  },
+  "require": {
+    "php": "^7.2",
+    "elasticsearch/elasticsearch": "^6.0",
+    "ramsey/uuid": "^3.7"
+  },
+  "conflict": {
+    "enm/elasticsearch-5": "*"
+  }
+}
