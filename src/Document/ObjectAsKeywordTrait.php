@@ -6,7 +6,7 @@ namespace Enm\Elasticsearch\Document;
 /**
  * @author Philipp Marien <marien@eosnewmedia.de>
  */
-class ObjectAsKeywordTrait
+trait ObjectAsKeywordTrait
 {
     /**
      * @param object $object
