@@ -32,24 +32,6 @@ interface DocumentManagerInterface
     public function type(string $className): string;
 
     /**
-     * @param string $className
-     * @param string $type
-     */
-    public function registerType(string $className, string $type): void;
-
-    /**
-     * @param string $className
-     * @param array $mapping
-     */
-    public function registerMapping(string $className, array $mapping): void;
-
-    /**
-     * @param string $className
-     * @param array $settings
-     */
-    public function registerSettings(string $className, array $settings): void;
-
-    /**
      * Creates the elasticsearch index
      * @param string|null $className
      * @return void
