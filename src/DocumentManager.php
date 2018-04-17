@@ -43,6 +43,11 @@ class DocumentManager implements DocumentManagerInterface
     private $mappings = [];
 
     /**
+     * @var array
+     */
+    private $pipelines = [];
+
+    /**
      * @var DocumentInterface[][]
      */
     private $documents = [];
@@ -55,6 +60,43 @@ class DocumentManager implements DocumentManagerInterface
     {
         $this->baseIndex = $index;
         $this->client = ClientBuilder::create()->setHosts([$host])->build();
+    }
+
+    /**
+     * @param string $className
+     * @param string $type
+     */
+    public function registerType(string $className, string $type): void
+    {
+        $this->types[$className] = $type;
+    }
+
+
+    /**
+     * @param string $className
+     * @param array $mapping
+     */
+    public function registerMapping(string $className, array $mapping): void
+    {
+        $this->mappings[$className] = $mapping;
+    }
+
+    /**
+     * @param string $className
+     * @param array $settings
+     */
+    public function registerSettings(string $className, array $settings): void
+    {
+        $this->settings[$className] = $settings;
+    }
+
+    /**
+     * @param string $className
+     * @param array $pipeline
+     */
+    public function registerPipeline(string $className, array $pipeline): void
+    {
+        $this->pipelines[$className] = $pipeline;
     }
 
     /**
@@ -162,34 +204,6 @@ class DocumentManager implements DocumentManagerInterface
     }
 
     /**
-     * @param string $className
-     * @param string $type
-     */
-    public function registerType(string $className, string $type): void
-    {
-        $this->types[$className] = $type;
-    }
-
-
-    /**
-     * @param string $className
-     * @param array $mapping
-     */
-    public function registerMapping(string $className, array $mapping): void
-    {
-        $this->mappings[$className] = $mapping;
-    }
-
-    /**
-     * @param string $className
-     * @param array $settings
-     */
-    public function registerSettings(string $className, array $settings): void
-    {
-        $this->settings[$className] = $settings;
-    }
-
-    /**
      * @param string|null $className
      */
     public function createIndex(string $className = null): void
@@ -209,12 +223,26 @@ class DocumentManager implements DocumentManagerInterface
                 $body['settings'] = (array)$this->settings[$mappedClassName];
             }
 
-            $this->elasticsearch()->indices()->create(
-                [
-                    'index' => $this->indexName($mappedClassName),
-                    'body' => $body
-                ]
-            );
+            $index = [
+                'index' => $this->indexName($mappedClassName),
+                'body' => $body
+            ];
+
+            if (array_key_exists($mappedClassName, $this->pipelines)) {
+                $this->elasticsearch()->ingest()->putPipeline(
+                    [
+                        'id' => $this->type($mappedClassName),
+                        'body' => [
+                            'description' => $this->pipelines[$mappedClassName]['description'],
+                            'processors' => array_values($this->pipelines[$mappedClassName]['processors']),
+                        ]
+                    ]
+                );
+
+                $index['pipeline'] = $this->type($mappedClassName);
+            }
+
+            $this->elasticsearch()->indices()->create($index);
         }
     }
 
@@ -226,6 +254,14 @@ class DocumentManager implements DocumentManagerInterface
         foreach ($this->mappings as $mappedClassName => $mapping) {
             if ($className !== null && $mappedClassName !== $className) {
                 continue;
+            }
+
+            if (array_key_exists($mappedClassName, $this->pipelines)) {
+                try {
+                    $this->elasticsearch()->ingest()->deletePipeline(['id' => $this->type($mappedClassName)]);
+                } catch (\Exception $e) {
+
+                }
             }
 
             $this->elasticsearch()->indices()->delete(['index' => $this->indexName($mappedClassName)]);
