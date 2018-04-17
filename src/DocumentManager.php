@@ -241,7 +241,7 @@ class DocumentManager implements DocumentManagerInterface
     {
         $className = \get_class($document);
 
-        $this->register($document);
+        $this->register($document, $replace);
 
         $this->elasticsearch()->index(
             [
