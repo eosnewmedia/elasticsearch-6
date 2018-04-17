@@ -108,4 +108,11 @@ interface DocumentManagerInterface
      * @return int
      */
     public function count(string $className, SearchInterface $search): int;
+
+    /**
+     * @param string $className
+     * @param array $suggestions
+     * @return string[][]
+     */
+    public function suggest(string $className, array $suggestions): array;
 }
