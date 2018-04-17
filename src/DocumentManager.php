@@ -238,8 +238,6 @@ class DocumentManager implements DocumentManagerInterface
                         ]
                     ]
                 );
-
-                $index['pipeline'] = $this->type($mappedClassName);
             }
 
             $this->elasticsearch()->indices()->create($index);
@@ -279,14 +277,17 @@ class DocumentManager implements DocumentManagerInterface
 
         $this->register($document, $replace);
 
-        $this->elasticsearch()->index(
-            [
-                'index' => $this->indexName($className),
-                'type' => $this->type($className),
-                'id' => $document->getId(),
-                'body' => $document->getStorable()
-            ]
-        );
+        $elasticDocument = [
+            'index' => $this->indexName($className),
+            'type' => $this->type($className),
+            'id' => $document->getId(),
+            'body' => $document->getStorable(),
+        ];
+        if (array_key_exists($className, $this->pipelines)) {
+            $elasticDocument['pipeline'] = $this->type($className);
+        }
+
+        $this->elasticsearch()->index($elasticDocument);
     }
 
     /**
