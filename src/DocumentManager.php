@@ -489,4 +489,39 @@ class DocumentManager implements DocumentManagerInterface
 
         throw new UnavailableException();
     }
+
+    /**
+     * @param string $className
+     * @param array $suggestions
+     * @return string[][]
+     */
+    public function suggest(string $className, array $suggestions): array
+    {
+        $result = $this->elasticsearch()->search(
+            [
+                'index' => $this->indexName($className),
+                'type' => $this->type($className),
+                'body' => [
+                    'suggest' => $suggestions,
+                ],
+            ]
+        );
+
+        $parsedSuggestions = [];
+        foreach ((array)$result['suggest'] as $key => $suggestionResults) {
+            if (!array_key_exists($key, $parsedSuggestions)) {
+                $parsedSuggestions[$key] = [];
+            }
+
+            foreach ((array)$suggestionResults as $suggestion) {
+                foreach ((array)$suggestion['options'] as $option) {
+                    $parsedSuggestions[$key][] = $option['text'];
+                }
+
+                $parsedSuggestions[$key] = array_unique($parsedSuggestions[$key]);
+            }
+        }
+
+        return $parsedSuggestions;
+    }
 }
