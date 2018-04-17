@@ -231,7 +231,7 @@ class DocumentManager implements DocumentManagerInterface
             if (array_key_exists($mappedClassName, $this->pipelines)) {
                 $this->elasticsearch()->ingest()->putPipeline(
                     [
-                        'id' => $this->type($mappedClassName),
+                        'id' => $this->indexName($mappedClassName),
                         'body' => [
                             'description' => $this->pipelines[$mappedClassName]['description'],
                             'processors' => array_values($this->pipelines[$mappedClassName]['processors']),
@@ -256,7 +256,7 @@ class DocumentManager implements DocumentManagerInterface
 
             if (array_key_exists($mappedClassName, $this->pipelines)) {
                 try {
-                    $this->elasticsearch()->ingest()->deletePipeline(['id' => $this->type($mappedClassName)]);
+                    $this->elasticsearch()->ingest()->deletePipeline(['id' => $this->indexName($mappedClassName)]);
                 } catch (\Exception $e) {
 
                 }
@@ -284,7 +284,7 @@ class DocumentManager implements DocumentManagerInterface
             'body' => $document->getStorable(),
         ];
         if (array_key_exists($className, $this->pipelines)) {
-            $elasticDocument['pipeline'] = $this->type($className);
+            $elasticDocument['pipeline'] = $this->indexName($className);
         }
 
         $this->elasticsearch()->index($elasticDocument);
